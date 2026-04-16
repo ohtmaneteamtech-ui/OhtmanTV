@@ -3,160 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ohtmanTV | الفخامة في البث</title>
+    <title>ohtmanTV | الأناقة والرياضة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #f97316; --bg-dark: #000; --card: #121212; }
-        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: #fff; margin:0; }
+        :root { --neon-green: #22c55e; --bg-black: #000000; }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-black); color: white; margin: 0; }
         
-        /* تصميم الشريط الجانبي الأنيق */
-        .sidebar { background: #080808; border-left: 1px solid #1a1a1a; transition: 0.3s; }
-        .ch-card { background: #111; border-radius: 12px; transition: 0.3s; cursor: pointer; border: 1px solid transparent; }
-        .ch-card:hover { transform: scale(1.03); background: #1a1a1a; }
-        .ch-active { border-color: var(--main); background: rgba(249, 115, 22, 0.1) !important; }
+        /* تصميم الأزرار والتصنيفات */
+        .cat-pill { padding: 8px 25px; border-radius: 999px; border: 1.5px solid #333; font-weight: bold; white-space: nowrap; transition: 0.3s; }
+        .cat-active { background-color: var(--neon-green); color: black; border-color: var(--neon-green); }
         
-        /* تجميل المشغل */
-        .video-box { box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid #222; border-radius: 24px; }
+        /* شبكة القنوات المربعة */
+        .channel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 15px; }
+        .ch-box { background: #111; border-radius: 15px; aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .ch-box img { width: 60%; object-fit: contain; }
+        .ch-label { font-size: 10px; font-weight: bold; margin-top: 8px; color: #aaa; }
+
+        /* منطقة الهيرو الخضراء */
+        .hero-card { background-color: #c9f2c7; border-radius: 30px; padding: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: center; }
+        .shاهد-btn { background-color: var(--neon-green); color: black; font-weight: 900; text-align: center; padding: 15px; border-radius: 20px; font-size: 24px; margin-top: -30px; position: relative; z-index: 10; border: 4px solid #000; }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        /* جدول المباريات */
-        .match-badge { background: linear-gradient(90deg, #f97316, #ea580c); color: #fff; border-radius: 8px; font-weight: 900; }
-        .live-pulse { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        /* مشغل الفيديو المنبثق */
+        #playerOverlay { position: fixed; inset: 0; background: black; z-index: 100; display: none; flex-direction: column; }
     </style>
 </head>
-<body class="h-screen flex flex-col md:flex-row overflow-hidden">
+<body class="pb-10">
 
-    <!-- قائمة القنوات (الجانب الأيمن) -->
-    <aside class="sidebar w-full md:w-80 flex flex-col h-1/2 md:h-full z-20">
-        <div class="p-6 border-b border-[#1a1a1a]">
-            <div class="text-2xl font-black italic tracking-tighter mb-4">
-                <span class="text-orange-600">OHTMAN</span>TV
+    <!-- نافبار علوي مطابق للورقة -->
+    <header class="p-4 flex justify-between items-center">
+        <div class="text-4xl font-black text-green-500 italic">ohtman</div>
+        <div class="flex gap-4 items-center">
+            <span class="text-xl">⚙️</span>
+            <span class="text-xl">🔄</span>
+            <span class="text-xl">🔳</span>
+            <span class="text-xl">👑</span>
+        </div>
+    </header>
+
+    <!-- قائمة التصنيفات -->
+    <div class="flex gap-3 overflow-x-auto px-4 py-2 no-scrollbar">
+        <div class="cat-pill cat-active">رياضة</div>
+        <div class="cat-pill">القنوات الإخبارية</div>
+        <div class="cat-pill">وثائقيات وترفيه</div>
+        <div class="cat-pill">دينية</div>
+    </div>
+
+    <!-- العنوان الفرعي -->
+    <div class="text-center py-6 text-4xl font-black italic">ohtman</div>
+
+    <!-- منطقة دوريات كرة القدم (نفس المربع الأخضر) -->
+    <div class="px-4">
+        <div class="hero-card">
+            <div class="flex flex-col items-center"><img src="https://logodownload.org/wp-content/uploads/2018/05/laliga-logo-0.png" class="w-12 mb-2"><span class="text-black text-[10px] font-bold uppercase">LALIGA</span></div>
+            <div class="flex flex-col items-center"><img src="https://logodownload.org/wp-content/uploads/2014/10/premier-league-logo-1.png" class="w-12 mb-2"><span class="text-black text-[10px] font-bold uppercase">Premier League</span></div>
+            <div class="col-span-2 flex justify-center"><img src="https://logodownload.org/wp-content/uploads/2014/05/uefa-champions-league-logo-1.png" class="w-20"></div>
+            <div class="flex flex-col items-center"><img src="https://logodownload.org/wp-content/uploads/2019/10/bundesliga-logo-0.png" class="w-12 mb-2"><span class="text-black text-[10px] font-bold uppercase">Bundesliga</span></div>
+            <div class="flex flex-col items-center"><img src="https://logodownload.org/wp-content/uploads/2021/01/ligue-1-logo-0.png" class="w-12 mb-2"><span class="text-black text-[10px] font-bold uppercase">Ligue 1</span></div>
+        </div>
+        <div class="shاهد-btn">شاهد</div>
+    </div>
+
+    <!-- شبكة القنوات -->
+    <div class="channel-grid">
+        <!-- قناة beIN -->
+        <div class="flex flex-col items-center" onclick="openPlayer('https://live-hls-web-aje.getaj.net/AJE/index.m3u8', 'beIN Sports')">
+            <div class="ch-box" style="background: linear-gradient(#4b0082, #000);">
+                <img src="https://logodownload.org/wp-content/uploads/2018/07/bein-sports-logo.png">
+                <span class="text-[8px] mt-4 opacity-50">ohtman</span>
             </div>
-            <input type="text" id="search" placeholder="ابحث عن قناتك..." 
-                class="w-full bg-[#151515] border border-[#222] rounded-xl p-3 text-xs outline-none focus:border-orange-600">
+            <span class="ch-label">بين سبورت</span>
+        </div>
+
+        <!-- قناة الكأس -->
+        <div class="flex flex-col items-center" onclick="openPlayer('https://alkass01.itworkscdn.net/alkass01/smil:alkass01.smil/playlist.m3u8', 'الكأس')">
+            <div class="ch-box" style="background: linear-gradient(#800000, #000);">
+                <img src="https://logodownload.org/wp-content/uploads/2019/11/alkass-logo.png">
+                <span class="text-[8px] mt-4 opacity-50">ohtman</span>
+            </div>
+            <span class="ch-label">الكأس</span>
+        </div>
+
+        <!-- قناة شاهد -->
+        <div class="flex flex-col items-center" onclick="openPlayer('https://stream.alarabiya.net/alarabiya/index.m3u8', 'Shahid')">
+            <div class="ch-box" style="background: linear-gradient(#004d4d, #000);">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Shahid_Logotype.svg/1200px-Shahid_Logotype.svg.png">
+                <span class="text-[8px] mt-4 opacity-50">ohtman</span>
+            </div>
+            <span class="ch-label">شاهد سبورت</span>
+        </div>
+
+        <!-- الجزيرة -->
+        <div class="flex flex-col items-center" onclick="openPlayer('https://live-hls-web-aja.getaj.net/AJA/index.m3u8', 'الجزيرة')">
+            <div class="ch-box" style="background: #111;">
+                <img src="https://upload.wikimedia.org/wikipedia/ar/thumb/a/a2/Aljazeera_Channel_Logo.svg/1200px-Aljazeera_Channel_Logo.svg.png">
+            </div>
+            <span class="ch-label">الجزيرة</span>
+        </div>
+
+        <!-- ناسا -->
+        <div class="flex flex-col items-center" onclick="openPlayer('https://ntv-shls.akamaized.net/hls/live/2014041/NASATV-Public/index.m3u8', 'NASA')">
+            <div class="ch-box" style="background: #111;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg">
+            </div>
+            <span class="ch-label">ناسا</span>
         </div>
         
-        <div id="channelList" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
-            <!-- القنوات هنا -->
-        </div>
-    </aside>
-
-    <!-- منطقة العرض (الوسط) -->
-    <main class="flex-1 overflow-y-auto no-scrollbar bg-black relative p-4 md:p-8">
-        
-        <!-- الهيدر الصغير -->
-        <div class="flex justify-between items-center mb-6">
-            <div id="statusInfo" class="text-[10px] font-bold text-gray-500 flex items-center gap-2">
-                <span class="live-pulse"></span> سرعة السيرفر: ممتازة
+        <!-- سكاي نيوز -->
+        <div class="flex flex-col items-center" onclick="openPlayer('https://skynewsarabia-main-hls.akamaized.net/hls/live/2104576/sn-main/index.m3u8', 'Sky News')">
+            <div class="ch-box" style="background: #111;">
+                <img src="https://upload.wikimedia.org/wikipedia/ar/thumb/3/36/Sky_News_Arabia_logo.svg/1200px-Sky_News_Arabia_logo.svg.png">
             </div>
-            <div class="text-[10px] text-orange-600 font-black tracking-widest uppercase">HD STREAMING</div>
+            <span class="ch-label">سكاي نيوز</span>
         </div>
+    </div>
 
-        <!-- المشغل الفاخر -->
-        <div class="video-box relative w-full aspect-video overflow-hidden bg-[#050505] group">
-            <video id="p" class="w-full h-full" controls autoplay playsinline></video>
-            <div id="ld" class="absolute inset-0 flex items-center justify-center bg-black/90 hidden">
-                <div class="w-10 h-10 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
+    <!-- مشغل الفيديو المنبثق -->
+    <div id="playerOverlay">
+        <div class="p-4 flex justify-between bg-[#111]">
+            <span id="playerTitle" class="font-bold"></span>
+            <button onclick="closePlayer()" class="bg-red-600 px-4 py-1 rounded text-sm">إغلاق</button>
         </div>
-
-        <div class="mt-6 flex justify-between items-start">
-            <div>
-                <h2 id="nowTitle" class="text-4xl font-black">اختر قناة</h2>
-                <p id="nowDesc" class="text-gray-500 text-sm mt-1">بث مباشر فائق الدقة 🫡</p>
-            </div>
+        <div class="flex-1 flex items-center justify-center">
+            <video id="tvVideo" class="w-full aspect-video" controls autoplay playsinline></video>
         </div>
-
-        <!-- قسم جدول المباريات (مرتب جداً) -->
-        <div class="mt-12">
-            <h3 class="text-2xl font-black mb-6 flex items-center gap-2">⚽️ جدول مباريات اليوم</h3>
-            <div id="matches" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <!-- المباريات تظهر هنا -->
-            </div>
-        </div>
-
-    </main>
+    </div>
 
     <script>
-        // روابط رسمية ومستقرة عالمياً (HLS Direct)
-        const CHANNELS = [
-            { id:1, n: "الجزيرة الإخبارية", cat: "أخبار", url: "https://live-hls-web-aja.getaj.net/AJA/index.m3u8" },
-            { id:2, n: "سكاي نيوز عربية", cat: "أخبار", url: "https://skynewsarabia-main-hls.akamaized.net/hls/live/2104576/sn-main/index.m3u8" },
-            { id:3, n: "فرانس 24 (الأقوى)", cat: "أخبار", url: "https://static.france24.com/live/F24_AR_LO_HLS/master.m3u8" },
-            { id:4, n: "TRT عربي (مباشر)", cat: "أخبار", url: "https://trtcanli.akamaized.net/hls/live/2083546/trt_arabi/master.m3u8" },
-            { id:5, n: "الغد الإخبارية", cat: "أخبار", url: "https://alghad.itworkscdn.net/alghad/live/playlist.m3u8" },
-            { id:6, n: "مكة المكرمة", cat: "إسلامية", url: "https://makkahlive.itworkscdn.net/makkahlive/smil:makkah.smil/playlist.m3u8" },
-            { id:7, n: "المدينة المنورة", cat: "إسلامية", url: "https://madinahlive.itworkscdn.net/madinahlive/smil:madinah.smil/playlist.m3u8" },
-            { id:8, n: "الحرة", cat: "أخبار", url: "https://mbclive-lh.akamaihd.net/i/alhurra_1@329929/master.m3u8" }
-        ];
-
-        // جدول مباريات اليوم
-        const M = [
-            { h: "ريال مدريد", a: "مانشستر سيتي", t: "22:00", l: "دوري الأبطال" },
-            { h: "الهلال", a: "العين", t: "21:00", l: "دوري أبطال آسيا" },
-            { h: "برشلونة", a: "باريس سان جيرمان", t: "22:00", l: "دوري الأبطال" }
-        ];
-
-        const video = document.getElementById('p');
-        const list = document.getElementById('channelList');
-        const ld = document.getElementById('ld');
+        const video = document.getElementById('tvVideo');
+        const overlay = document.getElementById('playerOverlay');
         let hls = null;
 
-        function play(c) {
-            document.getElementById('nowTitle').innerText = c.n;
-            document.getElementById('nowDesc').innerText = c.cat + " | بث رسمي مباشر";
-            ld.classList.remove('hidden');
-
+        function openPlayer(url, title) {
+            document.getElementById('playerTitle').innerText = title;
+            overlay.style.display = 'flex';
+            
             if (hls) hls.destroy();
 
             if (Hls.isSupported()) {
-                hls = new Hls({ xhrSetup: function(xhr, url) { xhr.withCredentials = false; } });
-                hls.loadSource(c.url);
+                hls = new Hls();
+                hls.loadSource(url);
                 hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play(); ld.classList.add('hidden'); });
+                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = c.url; video.play(); ld.classList.add('hidden');
+                video.src = url;
+                video.play();
             }
-
-            document.querySelectorAll('.ch-card').forEach(el => el.classList.remove('ch-active'));
-            const active = document.getElementById('ch-' + c.id);
-            if(active) active.classList.add('ch-active');
         }
 
-        function render() {
-            list.innerHTML = "";
-            CHANNELS.forEach(c => {
-                const div = document.createElement('div');
-                div.id = 'ch-' + c.id;
-                div.className = "ch-card p-4 flex items-center justify-between";
-                div.innerHTML = `<div class="font-bold text-sm">${c.n}</div><span class="text-[8px] bg-[#222] px-2 py-0.5 rounded text-gray-400 font-black">${c.cat}</span>`;
-                div.onclick = () => play(c);
-                list.appendChild(div);
-            });
-
-            const mCont = document.getElementById('matches');
-            mCont.innerHTML = "";
-            M.forEach(match => {
-                const div = document.createElement('div');
-                div.className = "bg-[#111] p-5 rounded-3xl border border-[#222] flex flex-col items-center justify-center space-y-3";
-                div.innerHTML = `
-                    <div class="text-[9px] font-black text-orange-600 uppercase tracking-widest">${match.l}</div>
-                    <div class="flex items-center justify-around w-full font-bold">
-                        <span>${match.h}</span>
-                        <div class="match-badge px-4 py-1 mx-4 text-xs">VS</div>
-                        <span>${match.a}</span>
-                    </div>
-                    <div class="text-[10px] text-gray-500 font-bold tracking-widest">🕒 ${match.t}</div>
-                `;
-                mCont.appendChild(div);
-            });
+        function closePlayer() {
+            overlay.style.display = 'none';
+            video.pause();
+            if (hls) hls.destroy();
         }
-
-        render();
-        play(CHANNELS[0]); // تشغيل الجزيرة عند البداية
     </script>
 </body>
 </html>
