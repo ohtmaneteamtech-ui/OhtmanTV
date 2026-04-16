@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ohtmanTV Pro</title>
+    <title>ohtmanTV Pro | Smart Categories</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -12,189 +12,157 @@
         .neon-green { color: #32CD32; }
         .bg-neon-green { background-color: #32CD32; }
         
-        /* شريط التصنيفات العلوي */
-        .category-pill { padding: 10px 25px; border-radius: 25px; font-weight: 700; font-size: 14px; white-space: nowrap; border: 1.5px solid #fff; }
+        /* شريط التصنيفات التفاعلي */
+        .category-pill { padding: 10px 25px; border-radius: 25px; font-weight: 700; font-size: 14px; white-space: nowrap; border: 1.5px solid #fff; transition: 0.3s; cursor: pointer; }
         .category-pill.active { background-color: #32CD32; color: #000; border-color: #32CD32; }
         
-        /* صندوق الدوريات (الأخضر الفاتح) */
-        .leagues-box { background-color: #c9f2c7; border-radius: 40px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: center; justify-items: center; }
-        .league-logo { width: 45px; height: 45px; object-fit: contain; }
-        
-        /* زر شاهد الكبير */
-        .watch-btn { background-color: #32CD32; color: #000; font-weight: 900; font-size: 32px; text-align: center; padding: 15px; border-radius: 25px; margin: -30px 15px 25px 15px; position: relative; border: 5px solid #000; }
+        .leagues-box { background-color: #c9f2c7; border-radius: 40px; padding: 25px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: center; justify-items: center; position: relative; }
+        .watch-btn { background-color: #32CD32; color: #000; font-weight: 900; font-size: 32px; text-align: center; padding: 15px; border-radius: 25px; margin: -30px 15px 25px 15px; position: relative; border: 5px solid #000; cursor: pointer; }
 
-        /* شبكة القنوات المربعة */
-        .channel-card { display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .channel-thumb { width: 100%; aspect-ratio: 1/1; border-radius: 20px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .channel-thumb:active { transform: scale(0.95); }
+        /* تصميم بطاقات القنوات */
+        .channel-card { display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: 0.3s; }
+        .channel-thumb { width: 100%; aspect-ratio: 1/1; border-radius: 20px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .channel-thumb img { width: 65%; object-fit: contain; }
         .remo-label { position: absolute; bottom: 8px; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.6); }
-        .channel-name { margin-top: 8px; font-size: 13px; font-weight: 700; color: #fff; }
+        .channel-name { margin-top: 8px; font-size: 12px; font-weight: 700; color: #fff; }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* المشغل المنبثق */
         #player { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; }
+        #playOverlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: none; flex-direction: column; items-center; justify-center; z-index: 10; }
     </style>
 </head>
 <body>
 
-    <!-- الهيدر العلوي -->
     <header class="p-5 flex justify-between items-center bg-black">
         <div class="text-5xl font-black neon-green italic tracking-tighter">ohtman</div>
-        <div class="flex gap-5 text-2xl text-white">
-            <span>⚙️</span>
-            <span>🔄</span>
-            <span>🔳</span>
-            <span>👑</span>
-        </div>
+        <div class="flex gap-5 text-2xl text-white"><span>⚙️</span><span>🔄</span><span>🔳</span><span>👑</span></div>
     </header>
 
-    <!-- قائمة التصنيفات -->
-    <div class="flex gap-3 overflow-x-auto px-5 py-2 no-scrollbar mb-4">
-        <div class="category-pill active">رياضة</div>
-        <div class="category-pill">القنوات الإخبارية</div>
-        <div class="category-pill">وثائقيات وترفيه</div>
-        <div class="category-pill">دينية</div>
+    <!-- أزرار التصنيفات مع نظام الفلترة برمجي -->
+    <div class="flex gap-3 overflow-x-auto px-5 py-2 no-scrollbar mb-4" id="categoryContainer">
+        <div class="category-pill active" onclick="filterChannels('رياضة', this)">رياضة</div>
+        <div class="category-pill" onclick="filterChannels('إخبارية', this)">القنوات الإخبارية</div>
+        <div class="category-pill" onclick="filterChannels('وثائقية', this)">وثائقية</div>
+        <div class="category-pill" onclick="filterChannels('دينية', this)">دينية</div>
     </div>
 
-    <!-- نص OHTMAN في المنتصف -->
-    <div class="text-center text-5xl font-black py-4 tracking-tighter cursor-default">ohtman</div>
+    <div class="text-center text-5xl font-black py-4 tracking-tighter">ohtman</div>
 
-    <!-- صندوق الدوريات (مطابق تماماً للصورة) -->
+    <!-- صندوق الدوريات -->
     <div class="px-4 mb-10">
         <div class="leagues-box shadow-xl">
-            <!-- عمود 1 -->
-            <div class="flex flex-col items-center gap-1">
-                <img src="https://logodownload.org/wp-content/uploads/2018/05/laliga-logo-0.png" class="league-logo">
-                <span class="text-[8px] text-black font-black">LALIGA</span>
-            </div>
-            <!-- مركز (بطل) -->
-            <div class="row-span-2"></div> <!-- مكان فارغ للتصميم -->
-            <!-- عمود 2 -->
-            <div class="flex flex-col items-center gap-1">
-                <img src="https://logodownload.org/wp-content/uploads/2014/10/premier-league-logo-1.png" class="league-logo">
-                <span class="text-[8px] text-black font-black">Premier League</span>
-            </div>
-            
-            <div class="flex flex-col items-center gap-1">
-                <img src="https://upload.wikimedia.org/wikipedia/en/4/41/Saudi_Professional_League_logo.png" class="league-logo">
-                <span class="text-[8px] text-black font-black">RSL</span>
-            </div>
-            
-            <!-- دوري أبطال أوروبا في المنتصف -->
-            <div class="absolute left-1/2 -translate-x-1/2 mt-10 flex flex-col items-center">
-                <img src="https://logodownload.org/wp-content/uploads/2014/05/uefa-champions-league-logo-1.png" class="w-16">
-                <span class="text-[8px] text-black font-black text-center">CHAMPIONS<br>LEAGUE</span>
-            </div>
-
-            <div class="flex flex-col items-center gap-1">
-                <img src="https://logodownload.org/wp-content/uploads/2021/01/ligue-1-logo-0.png" class="league-logo">
-                <span class="text-[8px] text-black font-black">LIGUE 1</span>
-            </div>
-            
-            <div class="flex flex-col items-center gap-1">
-                <img src="https://logodownload.org/wp-content/uploads/2019/10/bundesliga-logo-0.png" class="league-logo">
-                <span class="text-[8px] text-black font-black">BUNDESLIGA</span>
-            </div>
-            <div></div> <!-- خلية فارغة -->
-            <div class="flex flex-col items-center gap-1">
-                <img src="https://logodownload.org/wp-content/uploads/2018/05/serie-a-logo-0.png" class="league-logo">
-                <span class="text-[8px] text-black font-black">SERIE A</span>
-            </div>
+            <div class="flex flex-col items-center gap-1"><img src="https://logodownload.org/wp-content/uploads/2018/05/laliga-logo-0.png" class="w-10"></div>
+            <div></div>
+            <div class="flex flex-col items-center gap-1"><img src="https://logodownload.org/wp-content/uploads/2014/10/premier-league-logo-1.png" class="w-10"></div>
+            <div class="col-span-3 flex justify-center py-4"><img src="https://logodownload.org/wp-content/uploads/2014/05/uefa-champions-league-logo-1.png" class="w-20"></div>
+            <div class="flex flex-col items-center gap-1"><img src="https://logodownload.org/wp-content/uploads/2019/10/bundesliga-logo-0.png" class="w-10"></div>
+            <div></div>
+            <div class="flex flex-col items-center gap-1"><img src="https://logodownload.org/wp-content/uploads/2018/05/serie-a-logo-0.png" class="w-10"></div>
         </div>
-        <!-- زر شاهد المفتوح -->
-        <div class="watch-btn">شاهد</div>
+        <div class="watch-btn" onclick="filterChannels('رياضة')">شاهد</div>
     </div>
 
-    <!-- شبكة القنوات (بطاقات ملونة) -->
-    <div class="grid grid-cols-3 gap-4 px-4">
-        
-        <!-- بين سبورت -->
-        <div class="channel-card" onclick="play('https://live-hls-web-aje.getaj.net/AJE/index.m3u8', 'بين سبورت')">
-            <div class="channel-thumb shadow-2xl" style="background-color: #4b0082;">
-                <img src="https://logodownload.org/wp-content/uploads/2018/07/bein-sports-logo.png">
-                <span class="remo-label">ohtman</span>
-            </div>
-            <span class="channel-name">بين سبورت</span>
-        </div>
+    <!-- شبكة القنوات (تتغير حسب التصنيف) -->
+    <div class="grid grid-cols-3 gap-4 px-4" id="channelGrid"></div>
 
-        <!-- الرياضية -->
-        <div class="channel-card" onclick="play('https://alkass01.itworkscdn.net/alkass01/smil:alkass01.smil/playlist.m3u8', 'الكأس')">
-            <div class="channel-thumb" style="background-color: #000; border: 1px solid #333;">
-                <img src="https://logodownload.org/wp-content/uploads/2019/11/alkass-logo.png" style="width: 50%;">
-                <span class="remo-label">ohtman</span>
-            </div>
-            <span class="channel-name">الكأس الرياضية</span>
-        </div>
-
-        <!-- شاهد سبورت -->
-        <div class="channel-card" onclick="play('https://stream.alarabiya.net/alarabiya/index.m3u8', 'شاهد')">
-            <div class="channel-thumb" style="background: linear-gradient(135deg, #004d4d, #000);">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Shahid_Logotype.svg/1200px-Shahid_Logotype.svg.png" style="width: 80%;">
-                <span class="remo-label">ohtman</span>
-            </div>
-            <span class="channel-name">شاهد سبورت</span>
-        </div>
-
-        <!-- ستارز بلاي -->
-        <div class="channel-card" onclick="play('https://live-hls-web-aja.getaj.net/AJA/index.m3u8', 'ستارز بلاي')">
-            <div class="channel-thumb" style="background: radial-gradient(circle, #222, #000);">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Starzplay_logo.svg/2560px-Starzplay_logo.svg.png">
-                <span class="remo-label">ohtman</span>
-            </div>
-            <span class="channel-name">ستارز بلاي</span>
-        </div>
-
-        <!-- STC Sport -->
-        <div class="channel-card" onclick="play('https://skynewsarabia-main-hls.akamaized.net/hls/live/2104576/sn-main/index.m3u8', 'STC')">
-            <div class="channel-thumb" style="background-color: #4b0082;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/STC_Logo.svg/1200px-STC_Logo.svg.png" style="width: 70%;">
-                <span class="remo-label">ohtman</span>
-            </div>
-            <span class="channel-name">STC Sport</span>
-        </div>
-
-        <!-- SSC -->
-        <div class="channel-card" onclick="play('https://vs-hls-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_arabic_tv/t=3840/v=pv13/b=4352000/main.m3u8', 'SSC')">
-            <div class="channel-thumb" style="background: #111;">
-                <img src="https://upload.wikimedia.org/wikipedia/ar/3/30/SSC_Logo.png">
-                <span class="remo-label">ohtman</span>
-            </div>
-            <span class="channel-name">SSC سبورت</span>
-        </div>
-
-    </div>
-
-    <!-- المشغل -->
+    <!-- نافذة المشغل -->
     <div id="player">
         <div class="p-5 flex justify-between items-center border-b border-gray-800">
-            <h3 id="pTitle" class="font-bold text-xl">بث مباشر</h3>
+            <h3 id="pTitle" class="font-bold text-xl neon-green">بث مباشر</h3>
             <button onclick="closeP()" class="bg-red-600 px-6 py-2 rounded-full font-bold">إغلاق ❌</button>
         </div>
-        <div class="flex-1 flex flex-col items-center justify-center p-2">
-            <video id="v" class="w-full aspect-video rounded-xl shadow-2xl" controls autoplay playsinline></video>
-            <p class="mt-10 text-gray-500 italic">ohtmanTV Premium Streaming</p>
+        <div class="flex-1 relative flex flex-col items-center justify-center p-2">
+            <div class="relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl bg-black">
+                <video id="v" class="w-full h-full" controls playsinline></video>
+                <div id="playOverlay" onclick="forcePlay()" class="flex flex-col items-center justify-center">
+                    <div class="bg-neon-green text-black rounded-full p-6 text-4xl mb-2">▶️</div>
+                    <p class="font-bold">إضغط للتشغيل</p>
+                </div>
+            </div>
+            <p class="mt-10 text-gray-600 italic">ohtmanTV Premium Quality</p>
         </div>
     </div>
 
     <script>
+        // قاعدة بيانات القنوات منظمة بالأقسام
+        const CHANNELS = [
+            // قسم الرياضة
+            { n: "بين سبورت", u: "https://live-hls-web-aje.getaj.net/AJE/index.m3u8", cat: "رياضة", c: "#4b0082", img: "https://logodownload.org/wp-content/uploads/2018/07/bein-sports-logo.png" },
+            { n: "الكأس", u: "https://alkass01.itworkscdn.net/alkass01/smil:alkass01.smil/playlist.m3u8", cat: "رياضة", c: "#000", img: "https://logodownload.org/wp-content/uploads/2019/11/alkass-logo.png" },
+            { n: "شاهد", u: "https://stream.alarabiya.net/alarabiya/index.m3u8", cat: "رياضة", c: "#004d4d", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Shahid_Logotype.svg/1200px-Shahid_Logotype.svg.png" },
+            { n: "SSC سبورت", u: "https://vs-hls-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_arabic_tv/t=3840/v=pv13/b=4352000/main.m3u8", cat: "رياضة", c: "#111", img: "https://upload.wikimedia.org/wikipedia/ar/3/30/SSC_Logo.png" },
+            
+            // قسم الأخبار
+            { n: "الجزيرة", u: "https://live-hls-web-aja.getaj.net/AJA/index.m3u8", cat: "إخبارية", c: "#111", img: "https://upload.wikimedia.org/wikipedia/ar/thumb/a/a2/Aljazeera_Channel_Logo.svg/1200px-Aljazeera_Channel_Logo.svg.png" },
+            { n: "سكاي نيوز", u: "https://skynewsarabia-main-hls.akamaized.net/hls/live/2104576/sn-main/index.m3u8", cat: "إخبارية", c: "#111", img: "https://upload.wikimedia.org/wikipedia/ar/thumb/3/36/Sky_News_Arabia_logo.svg/1200px-Sky_News_Arabia_logo.svg.png" },
+            { n: "فرانس 24", u: "https://static.france24.com/live/F24_AR_LO_HLS/master.m3u8", cat: "إخبارية", c: "#222", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/France_24_logo.svg/1200px-France_24_logo.svg.png" },
+            
+            // قسم الوثائقية
+            { n: "ناسا بلس", u: "https://ntv-shls.akamaized.net/hls/live/2014041/NASATV-Public/index.m3u8", cat: "وثائقية", c: "#000", img: "https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" },
+            { n: "TRT Docs", u: "https://trtcanli.akamaized.net/hls/live/2083546/trt_arabi/master.m3u8", cat: "وثائقية", c: "#111", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/TRT_Logo.svg/1200px-TRT_Logo.svg.png" },
+
+            // قسم الدينية
+            { n: "مكة المباشر", u: "https://makkahlive.itworkscdn.net/makkahlive/smil:makkah.smil/playlist.m3u8", cat: "دينية", c: "#004d00", img: "https://picsum.photos/seed/makkah/200" },
+            { id: 7, n: "المدينة المباشر", u: "https://madinahlive.itworkscdn.net/madinahlive/smil:madinah.smil/playlist.m3u8", cat: "دينية", c: "#004d00", img: "https://picsum.photos/seed/madinah/200" }
+        ];
+
         const v = document.getElementById('v');
         const p = document.getElementById('player');
+        const overlay = document.getElementById('playOverlay');
+        const grid = document.getElementById('channelGrid');
         let h = null;
 
-        function play(u, t) {
-            document.getElementById('pTitle').innerText = t;
+        // دالة الفلترة والتبديل بين الأقسام
+        function filterChannels(category, element) {
+            // تحديث شكل الأزرار
+            if(element) {
+                document.querySelectorAll('.category-pill').forEach(btn => btn.classList.remove('active'));
+                element.classList.add('active');
+            }
+
+            grid.innerHTML = ""; // مسح الشبكة الحالية
+            
+            // تصفية القنوات وعرض القسم المختار
+            const filtered = CHANNELS.filter(ch => ch.cat === category);
+            
+            filtered.forEach(ch => {
+                const div = document.createElement('div');
+                div.className = "channel-card";
+                div.onclick = () => playChannel(ch.u, ch.n);
+                div.innerHTML = `
+                    <div class="channel-thumb shadow-2xl" style="background-color: ${ch.c}; border: 1px solid rgba(255,255,255,0.1)">
+                        <img src="${ch.img}">
+                        <span class="remo-label">ohtman</span>
+                    </div>
+                    <span class="channel-name">${ch.n}</span>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function playChannel(url, title) {
+            document.getElementById('pTitle').innerText = title;
             p.style.display = 'flex';
+            overlay.style.display = 'none';
+
             if (h) h.destroy();
+
             if (Hls.isSupported()) {
                 h = new Hls();
-                h.loadSource(u);
+                h.loadSource(url);
                 h.attachMedia(v);
-                h.on(Hls.Events.MANIFEST_PARSED, () => v.play().catch(e => {}));
+                h.on(Hls.Events.MANIFEST_PARSED, () => {
+                    v.play().catch(() => overlay.style.display = 'flex');
+                });
             } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
-                v.src = u; v.play().catch(e => {});
+                v.src = url;
+                v.play().catch(() => overlay.style.display = 'flex');
             }
+        }
+
+        function forcePlay() {
+            v.play();
+            overlay.style.display = 'none';
         }
 
         function closeP() {
@@ -202,6 +170,9 @@
             v.pause();
             if (h) h.destroy();
         }
+
+        // تشغيل قسم الرياضة عند تحميل التطبيق افتراضياً
+        filterChannels('رياضة');
     </script>
 </body>
 </html>
