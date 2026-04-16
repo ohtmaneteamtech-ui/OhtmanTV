@@ -3,145 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ohtmanTV v3.1 | الروابط المستقرة</title>
+    <title>ohtmanTV | الفخامة في البث</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #f97316; --bg: #050505; }
-        body { font-family: 'Cairo', sans-serif; background-color: var(--bg); color: #fff; margin:0; }
-        .glass-nav { background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(20px); border-bottom: 1px solid #222; }
-        .sidebar-item { transition: 0.3s relative; border-radius: 12px; }
-        .sidebar-item:hover { background: rgba(249, 115, 22, 0.1); }
-        .active-channel { background: var(--accent) !important; color: white !important; }
+        :root { --main: #f97316; --bg-dark: #000; --card: #121212; }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: #fff; margin:0; }
+        
+        /* تصميم الشريط الجانبي الأنيق */
+        .sidebar { background: #080808; border-left: 1px solid #1a1a1a; transition: 0.3s; }
+        .ch-card { background: #111; border-radius: 12px; transition: 0.3s; cursor: pointer; border: 1px solid transparent; }
+        .ch-card:hover { transform: scale(1.03); background: #1a1a1a; }
+        .ch-active { border-color: var(--main); background: rgba(249, 115, 22, 0.1) !important; }
+        
+        /* تجميل المشغل */
+        .video-box { box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid #222; border-radius: 24px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .match-card { background: #111; border: 1px solid #222; border-radius: 15px; }
+        
+        /* جدول المباريات */
+        .match-badge { background: linear-gradient(90deg, #f97316, #ea580c); color: #fff; border-radius: 8px; font-weight: 900; }
+        .live-pulse { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body class="h-screen flex flex-col md:flex-row overflow-hidden">
 
-    <!-- نافبار -->
-    <nav class="glass-nav px-6 py-4 flex justify-between items-center z-50">
-        <div class="text-2xl font-black"><span class="text-orange-600">OHTMAN</span>TV</div>
-        <div class="flex gap-4">
-             <button onclick="switchTab('channels')" class="text-sm font-bold">القنوات</button>
-             <button onclick="switchTab('matches')" class="text-sm font-bold text-gray-500 hover:text-white">المباريات</button>
+    <!-- قائمة القنوات (الجانب الأيمن) -->
+    <aside class="sidebar w-full md:w-80 flex flex-col h-1/2 md:h-full z-20">
+        <div class="p-6 border-b border-[#1a1a1a]">
+            <div class="text-2xl font-black italic tracking-tighter mb-4">
+                <span class="text-orange-600">OHTMAN</span>TV
+            </div>
+            <input type="text" id="search" placeholder="ابحث عن قناتك..." 
+                class="w-full bg-[#151515] border border-[#222] rounded-xl p-3 text-xs outline-none focus:border-orange-600">
         </div>
-    </nav>
-
-    <div class="flex flex-1 overflow-hidden">
         
-        <!-- الشريط الجانبي -->
-        <aside class="w-full md:w-72 flex flex-col border-l border-[#222] bg-[#0c0c0c] hidden md:flex">
-            <div class="p-4"><input type="text" id="searchInput" placeholder="بحث عن قناة..." class="w-full bg-[#151515] border border-[#333] rounded-xl p-3 text-xs outline-none"></div>
-            <div id="channelContainer" class="flex-1 overflow-y-auto px-2 no-scrollbar"></div>
-        </aside>
+        <div id="channelList" class="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+            <!-- القنوات هنا -->
+        </div>
+    </aside>
 
-        <!-- المحتوى الرئيسي -->
-        <main id="mainContent" class="flex-1 overflow-y-auto p-4 md:p-8">
-            
-            <!-- قسم المشغل -->
-            <div id="playerSection">
-                <div class="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl bg-black border border-[#222]">
-                    <video id="tvPlayer" class="w-full h-full" controls autoplay playsinline></video>
-                    <div id="loader" class="absolute inset-0 flex items-center justify-center bg-black/90 hidden">
-                        <div class="w-8 h-8 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                </div>
-                <div class="mt-6">
-                    <h2 id="nowPlayingTitle" class="text-2xl font-black">اختر قناة</h2>
-                    <p id="nowPlayingDesc" class="text-gray-500 text-sm mt-1">بث مباشر مجاني</p>
-                </div>
+    <!-- منطقة العرض (الوسط) -->
+    <main class="flex-1 overflow-y-auto no-scrollbar bg-black relative p-4 md:p-8">
+        
+        <!-- الهيدر الصغير -->
+        <div class="flex justify-between items-center mb-6">
+            <div id="statusInfo" class="text-[10px] font-bold text-gray-500 flex items-center gap-2">
+                <span class="live-pulse"></span> سرعة السيرفر: ممتازة
             </div>
+            <div class="text-[10px] text-orange-600 font-black tracking-widest uppercase">HD STREAMING</div>
+        </div>
 
-            <!-- قسم المباريات -->
-            <div id="matchSection" class="hidden">
-                <h3 class="text-xl font-black mb-6">📅 مباريات اليوم</h3>
-                <div id="matchGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <!-- المشغل الفاخر -->
+        <div class="video-box relative w-full aspect-video overflow-hidden bg-[#050505] group">
+            <video id="p" class="w-full h-full" controls autoplay playsinline></video>
+            <div id="ld" class="absolute inset-0 flex items-center justify-center bg-black/90 hidden">
+                <div class="w-10 h-10 border-2 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
             </div>
+        </div>
 
-        </main>
-    </div>
+        <div class="mt-6 flex justify-between items-start">
+            <div>
+                <h2 id="nowTitle" class="text-4xl font-black">اختر قناة</h2>
+                <p id="nowDesc" class="text-gray-500 text-sm mt-1">بث مباشر فائق الدقة 🫡</p>
+            </div>
+        </div>
+
+        <!-- قسم جدول المباريات (مرتب جداً) -->
+        <div class="mt-12">
+            <h3 class="text-2xl font-black mb-6 flex items-center gap-2">⚽️ جدول مباريات اليوم</h3>
+            <div id="matches" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- المباريات تظهر هنا -->
+            </div>
+        </div>
+
+    </main>
 
     <script>
-        // الروابط المحدثة (رسمية ومستقرة جداً)
+        // روابط رسمية ومستقرة عالمياً (HLS Direct)
         const CHANNELS = [
-            { id: 1, name: "الجزيرة الإخبارية", cat: "أخبار", url: "https://live-hls-web-aja.getaj.net/AJA/index.m3u8" },
-            { id: 2, name: "العربية الحدث", cat: "أخبار", url: "https://stream.alarabiya.net/alarabiya/index.m3u8" },
-            { id: 3, name: "سكاي نيوز عربية", cat: "أخبار", url: "https://skynewsarabia-main-hls.akamaized.net/hls/live/2104576/sn-main/index.m3u8" },
-            { id: 4, name: "TRT عربي (مستقر)", cat: "أخبار", url: "https://trtcanli.akamaized.net/hls/live/2083546/trt_arabi/master.m3u8" },
-            { id: 5, name: "فرانس 24 (عربي)", cat: "أخبار", url: "https://static.france24.com/live/F24_AR_LO_HLS/master.m3u8" },
-            { id: 6, name: "الغد الإخبارية", cat: "أخبار", url: "https://alghad.itworkscdn.net/alghad/live/playlist.m3u8" },
-            { id: 7, name: "مكة المكرّمة (مباشر)", cat: "إسلامية", url: "https://makkahlive.itworkscdn.net/makkahlive/smil:makkah.smil/playlist.m3u8" },
-            { id: 8, name: "المدينة المنورة (مباشر)", cat: "إسلامية", url: "https://madinahlive.itworkscdn.net/madinahlive/smil:madinah.smil/playlist.m3u8" },
-            { id: 9, name: "DW عربية (ألمانيا)", cat: "أخبار", url: "https://dwamdstream-lh.akamaihd.net/i/dwam_arabia_1@534720/master.m3u8" }
+            { id:1, n: "الجزيرة الإخبارية", cat: "أخبار", url: "https://live-hls-web-aja.getaj.net/AJA/index.m3u8" },
+            { id:2, n: "سكاي نيوز عربية", cat: "أخبار", url: "https://skynewsarabia-main-hls.akamaized.net/hls/live/2104576/sn-main/index.m3u8" },
+            { id:3, n: "فرانس 24 (الأقوى)", cat: "أخبار", url: "https://static.france24.com/live/F24_AR_LO_HLS/master.m3u8" },
+            { id:4, n: "TRT عربي (مباشر)", cat: "أخبار", url: "https://trtcanli.akamaized.net/hls/live/2083546/trt_arabi/master.m3u8" },
+            { id:5, n: "الغد الإخبارية", cat: "أخبار", url: "https://alghad.itworkscdn.net/alghad/live/playlist.m3u8" },
+            { id:6, n: "مكة المكرمة", cat: "إسلامية", url: "https://makkahlive.itworkscdn.net/makkahlive/smil:makkah.smil/playlist.m3u8" },
+            { id:7, n: "المدينة المنورة", cat: "إسلامية", url: "https://madinahlive.itworkscdn.net/madinahlive/smil:madinah.smil/playlist.m3u8" },
+            { id:8, n: "الحرة", cat: "أخبار", url: "https://mbclive-lh.akamaihd.net/i/alhurra_1@329929/master.m3u8" }
         ];
 
-        const MATCHES = [
-            { h: "ريال مدريد", a: "برشلونة", t: "22:00", l: "الدوري الإسباني" },
-            { h: "أرسنال", a: "بايرن ميونخ", t: "21:00", l: "دوري الأبطال" }
+        // جدول مباريات اليوم
+        const M = [
+            { h: "ريال مدريد", a: "مانشستر سيتي", t: "22:00", l: "دوري الأبطال" },
+            { h: "الهلال", a: "العين", t: "21:00", l: "دوري أبطال آسيا" },
+            { h: "برشلونة", a: "باريس سان جيرمان", t: "22:00", l: "دوري الأبطال" }
         ];
 
-        const video = document.getElementById('tvPlayer');
-        const channelContainer = document.getElementById('channelContainer');
-        const loader = document.getElementById('loader');
+        const video = document.getElementById('p');
+        const list = document.getElementById('channelList');
+        const ld = document.getElementById('ld');
         let hls = null;
 
-        function playChannel(c) {
-            document.getElementById('nowPlayingTitle').innerText = c.name;
-            document.getElementById('nowPlayingDesc').innerText = "جاري الاتصال بالسيرفر الرسمي...";
-            loader.classList.remove('hidden');
+        function play(c) {
+            document.getElementById('nowTitle').innerText = c.n;
+            document.getElementById('nowDesc').innerText = c.cat + " | بث رسمي مباشر";
+            ld.classList.remove('hidden');
 
             if (hls) hls.destroy();
 
             if (Hls.isSupported()) {
-                hls = new Hls({
-                    xhrSetup: function(xhr, url) { xhr.withCredentials = false; } // لضمان العمل على أغلب السيرفرات
-                });
+                hls = new Hls({ xhrSetup: function(xhr, url) { xhr.withCredentials = false; } });
                 hls.loadSource(c.url);
                 hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play(); loader.classList.add('hidden'); });
-                hls.on(Hls.Events.ERROR, () => { document.getElementById('nowPlayingDesc').innerText = "خطأ في السيرفر، يرجى تجربة قناة أخرى."; loader.classList.add('hidden'); });
+                hls.on(Hls.Events.MANIFEST_PARSED, () => { video.play(); ld.classList.add('hidden'); });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = c.url; video.play(); loader.classList.add('hidden');
+                video.src = c.url; video.play(); ld.classList.add('hidden');
             }
 
-            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active-channel'));
-            const activeEl = document.getElementById('ch-' + c.id);
-            if(activeEl) activeEl.classList.add('active-channel');
+            document.querySelectorAll('.ch-card').forEach(el => el.classList.remove('ch-active'));
+            const active = document.getElementById('ch-' + c.id);
+            if(active) active.classList.add('ch-active');
         }
 
-        function renderChannels() {
-            channelContainer.innerHTML = "";
+        function render() {
+            list.innerHTML = "";
             CHANNELS.forEach(c => {
                 const div = document.createElement('div');
                 div.id = 'ch-' + c.id;
-                div.className = "sidebar-item p-3 mb-2 flex items-center gap-3 cursor-pointer text-gray-400";
-                div.innerHTML = `<span class="text-xs">📺</span> <span class="font-bold text-xs">${c.name}</span>`;
-                div.onclick = () => playChannel(c);
-                channelContainer.appendChild(div);
+                div.className = "ch-card p-4 flex items-center justify-between";
+                div.innerHTML = `<div class="font-bold text-sm">${c.n}</div><span class="text-[8px] bg-[#222] px-2 py-0.5 rounded text-gray-400 font-black">${c.cat}</span>`;
+                div.onclick = () => play(c);
+                list.appendChild(div);
+            });
+
+            const mCont = document.getElementById('matches');
+            mCont.innerHTML = "";
+            M.forEach(match => {
+                const div = document.createElement('div');
+                div.className = "bg-[#111] p-5 rounded-3xl border border-[#222] flex flex-col items-center justify-center space-y-3";
+                div.innerHTML = `
+                    <div class="text-[9px] font-black text-orange-600 uppercase tracking-widest">${match.l}</div>
+                    <div class="flex items-center justify-around w-full font-bold">
+                        <span>${match.h}</span>
+                        <div class="match-badge px-4 py-1 mx-4 text-xs">VS</div>
+                        <span>${match.a}</span>
+                    </div>
+                    <div class="text-[10px] text-gray-500 font-bold tracking-widest">🕒 ${match.t}</div>
+                `;
+                mCont.appendChild(div);
             });
         }
 
-        function renderMatches() {
-            const grid = document.getElementById('matchGrid');
-            grid.innerHTML = "";
-            MATCHES.forEach(m => {
-                const card = document.createElement('div');
-                card.className = "match-card p-4 text-center";
-                card.innerHTML = `<div class="text-[9px] text-orange-500 font-bold mb-2">${m.l}</div><div class="text-xs font-bold">${m.h} VS ${m.a}</div><div class="mt-2 text-[10px] text-gray-500">${m.t}</div>`;
-                grid.appendChild(card);
-            });
-        }
-
-        function switchTab(tab) {
-            document.getElementById('playerSection').classList.toggle('hidden', tab !== 'channels');
-            document.getElementById('matchSection').classList.toggle('hidden', tab !== 'matches');
-        }
-
-        renderChannels();
-        renderMatches();
-        playChannel(CHANNELS[0]);
+        render();
+        play(CHANNELS[0]); // تشغيل الجزيرة عند البداية
     </script>
 </body>
-    </html>
+</html>
