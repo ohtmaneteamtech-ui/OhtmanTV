@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ohtmanTV 🇲🇦 القنوات المغربية</title>
+    <title>ohtmanTV Pro | Fixed Auto-play</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -11,17 +11,19 @@
         body { font-family: 'Cairo', sans-serif; background-color: #000; color: #fff; margin: 0; padding-bottom: 50px; }
         .neon-green { color: #32cd32; }
         .bg-neon-green { background-color: #32cd32; }
-        .category-pill { padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 12px; white-space: nowrap; border: 1.5px solid #333; transition: 0.3s; cursor: pointer; }
+        .category-pill { padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 12px; white-space: nowrap; border: 1.5px solid #333; cursor: pointer; }
         .category-pill.active { background-color: #32cd32; color: #000; border-color: #32cd32; }
         .leagues-box { background-color: #c9f2c7; border-radius: 40px; padding: 35px 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; justify-items: center; position: relative; }
         .center-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; }
-        .watch-btn { background-color: #32cd32; color: #000; font-weight: 900; font-size: 28px; text-align: center; padding: 12px; border-radius: 25px; margin: -25px 20px 20px 20px; position: relative; border: 4px solid #000; cursor: pointer; z-index: 10; }
+        .watch-btn { background-color: #32cd32; color: #000; font-weight: 900; font-size: 28px; text-align: center; padding: 12px; border-radius: 25px; margin: -25px 20px 20px 20px; border: 4px solid #000; cursor: pointer; z-index: 10; position: relative; }
         .channel-thumb { width: 100%; aspect-ratio: 1/1; border-radius: 22px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #111; }
         .channel-thumb img { width: 65%; object-fit: contain; }
-        .remo-label { position: absolute; bottom: 8px; font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.2); text-transform: uppercase; }
+        .remo-label { position: absolute; bottom: 8px; font-size: 9px; font-weight: 900; color: rgba(255,255,255,0.2); }
         #player { position: fixed; inset: 0; background: #000; z-index: 1000; display: none; flex-direction: column; }
-        #playOverlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: none; flex-direction: column; items-center; justify-center; z-index: 50; }
+        /* طبقة التشغيل اليدوي الأنيقة */
+        #playOverlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 50; cursor: pointer; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .shadow-neon { box-shadow: 0 0 30px rgba(50, 205, 50, 0.4); }
     </style>
 </head>
 <body>
@@ -49,7 +51,7 @@
             <img src="https://images.weserv.nl/?url=https://upload.wikimedia.org/wikipedia/en/thumb/d/df/Bundesliga_logo_%282017%29.svg/1024px-Bundesliga_logo_%282017%29.svg.png" class="w-12">
             <img src="https://images.weserv.nl/?url=https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Ligue1_Uber_Eats_logo.svg/1024px-Ligue1_Uber_Eats_logo.svg.png" class="w-12">
         </div>
-        <div class="watch-btn" onclick="startDefault()">شاهد المباشر</div>
+        <div class="watch-btn" onclick="startWithClick()">إضغط للمشاهدة 📺</div>
     </div>
 
     <div class="grid grid-cols-3 gap-4 px-4" id="channelGrid"></div>
@@ -57,44 +59,32 @@
     <!-- نافذة المشغل -->
     <div id="player">
         <div class="p-5 flex justify-between items-center border-b border-gray-900 shadow-xl">
-            <h3 id="pTitle" class="font-bold text-xl neon-green">قناة مغربية</h3>
+            <h3 id="pTitle" class="font-bold text-xl neon-green tracking-tighter">Live Stream</h3>
             <button onclick="closeP()" class="bg-red-600 px-6 py-2 rounded-full font-bold text-xs">إغلاق ❌</button>
         </div>
-        <div class="flex-1 relative flex flex-col items-center justify-center p-2 bg-[#050505]">
-            <div class="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl bg-black">
+        <div class="flex-1 relative flex flex-col items-center justify-center p-2 bg-black">
+            <div class="relative w-full aspect-video rounded-3xl overflow-hidden shadow-2xl bg-[#050505]">
                 <video id="v" class="w-full h-full" controls playsinline></video>
-                <div id="playOverlay" onclick="forcePlay()" class="items-center justify-center">
-                    <div class="bg-neon-green text-black rounded-full p-7 text-4xl mb-4 shadow-[0_0_30px_#32cd32]">▶️</div>
-                    <p class="font-black text-xl tracking-tighter">إضغط للتشغيل</p>
+                <!-- طبقة التدخل البشري -->
+                <div id="playOverlay" onclick="manualPlay()">
+                    <div class="bg-neon-green text-black rounded-full p-8 text-4xl mb-4 shadow-neon">▶️</div>
+                    <p class="font-black text-xl text-white tracking-widest">المتصفح يطلب نقرة للتشغيل</p>
+                    <p class="text-xs text-gray-400 mt-2">إضغط هنا لبدء البث فوراً</p>
                 </div>
             </div>
-            <p class="mt-8 text-gray-500 italic text-sm">ohtmanTV | البث المغربي المباشر</p>
+            <p class="mt-8 text-gray-600 italic text-sm font-bold">Premium ohtmanTV Experience</p>
         </div>
     </div>
 
     <script>
         const P = "https://images.weserv.nl/?url=";
-
         const CHANNELS = [
-            // المغرب (SNRT & Medi1)
-            { n: "الأولى المغربية", u: "https://al-aoula-hls.snrtlive.ma/alaoula/master.m3u8", cat: "المغرب", bg: "#990000", img: P+"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Al_Aoula_logo.svg/1024px-Al_Aoula_logo.svg.png" },
-            { n: "دوزيم (2M)", u: "http://2m-hls.snrtlive.ma/2m/master.m3u8", cat: "المغرب", bg: "#003399", img: P+"https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/2M_Maroc_logo.svg/1024px-2M_Maroc_logo.svg.png" },
-            { n: "الرياضية", u: "https://arryadia-hls.snrtlive.ma/arryadia/master.m3u8", cat: "المغرب", bg: "#006633", img: P+"https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Arryadia_logo.svg/1024px-Arryadia_logo.svg.png" },
-            { n: "ميدي 1 تي في", u: "https://medi1tv_hls_arabic-hls.medi1tv.com/medi1tv_hls_arabic/index.m3u8", cat: "المغرب", bg: "#000", img: P+"https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Medi_1_TV_logo.svg/1024px-Medi_1_TV_logo.svg.png" },
-            { n: "الأمازيغية", u: "https://tamazight-hls.snrtlive.ma/tamazight/master.m3u8", cat: "المغرب", bg: "#990000", img: P+"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Tamazight_logo.svg/1024px-Tamazight_logo.svg.png" },
-            { n: "المغربية 5", u: "https://al-maghribia-hls.snrtlive.ma/almaghribia/master.m3u8", cat: "المغرب", bg: "#006633", img: P+"https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Al_Maghribia_logo.svg/1024px-Al_Maghribia_logo.svg.png" },
-            
-            // رياضة
-            { n: "بين سبورت News", u: "https://live-hls-web-aje.getaj.net/AJE/index.m3u8", cat: "رياضة", bg: "#4b0082", img: P+"https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/BeIN_Sports_logo.svg/1024px-BeIN_Sports_logo.svg.png" },
-            { n: "الكأس 1", u: "https://alkass01.itworkscdn.net/alkass01/smil:alkass01.smil/playlist.m3u8", cat: "رياضة", bg: "#000", img: P+"https://upload.wikimedia.org/wikipedia/ar/thumb/d/d4/Alkass-logo.png/1200px-Alkass-logo.png" },
-            
-            // أخبار
-            { n: "الجزيرة", u: "https://live-hls-web-aja.getaj.net/AJA/index.m3u8", cat: "إخبارية", bg: "#000", img: P+"https://upload.wikimedia.org/wikipedia/ar/thumb/a/a2/Aljazeera_Channel_Logo.svg/1200px-Aljazeera_Channel_Logo.svg.png" },
-            { n: "سكاي نيوز", u: "https://skynewsarabia-main-hls.akamaized.net/hls/live/2104576/sn-main/index.m3u8", cat: "إخبارية", bg: "#111", img: P+"https://upload.wikimedia.org/wikipedia/ar/thumb/3/36/Sky_News_Arabia_logo.svg/1200px-Sky_News_Arabia_logo.svg.png" },
-            
-            // دينية
-            { n: "السادسة (قرآن)", u: "https://assadissa-hls.snrtlive.ma/assadissa/master.m3u8", cat: "إسلامية", bg: "#004d00", img: P+"https://upload.wikimedia.org/wikipedia/ar/d/d2/Assadissa_logo.png" },
-            { n: "مكة مباشر", u: "https://makkahlive.itworkscdn.net/makkahlive/smil:makkah.smil/playlist.m3u8", cat: "إسلامية", bg: "#004d00", img: P+"https://i.ibb.co/vzB76XQ/makkah.png" }
+            { n: "الأولى المغربية", u: "https://al-aoula-hls.snrtlive.ma/alaoula/master.m3u8", cat: "المغرب", bg: "#990000", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Al_Aoula_logo.svg/1024px-Al_Aoula_logo.svg.png" },
+            { n: "دوزيم (2M)", u: "http://2m-hls.snrtlive.ma/2m/master.m3u8", cat: "المغرب", bg: "#003399", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/2M_Maroc_logo.svg/1024px-2M_Maroc_logo.svg.png" },
+            { n: "الرياضية المغربية", u: "https://arryadia-hls.snrtlive.ma/arryadia/master.m3u8", cat: "المغرب", bg: "#006633", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Arryadia_logo.svg/1024px-Arryadia_logo.svg.png" },
+            { n: "ميدي 1 تي في", u: "https://medi1tv_hls_arabic-hls.medi1tv.com/medi1tv_hls_arabic/index.m3u8", cat: "المغرب", bg: "#000", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Medi_1_TV_logo.svg/1024px-Medi_1_TV_logo.svg.png" },
+            { n: "بين سبورت News", u: "https://live-hls-web-aje.getaj.net/AJE/index.m3u8", cat: "رياضة", bg: "#4b0082", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/BeIN_Sports_logo.svg/1024px-BeIN_Sports_logo.svg.png" },
+            { n: "الجزيرة", u: "https://live-hls-web-aja.getaj.net/AJA/index.m3u8", cat: "إخبارية", bg: "#000", img: "https://upload.wikimedia.org/wikipedia/ar/thumb/a/a2/Aljazeera_Channel_Logo.svg/1200px-Aljazeera_Channel_Logo.svg.png" }
         ];
 
         const v = document.getElementById('v');
@@ -106,7 +96,6 @@
         function switchCategory(cat, element) {
             document.querySelectorAll('.category-pill').forEach(btn => btn.classList.remove('active'));
             if(element) element.classList.add('active');
-            
             grid.innerHTML = "";
             CHANNELS.filter(ch => ch.cat === cat).forEach(ch => {
                 const div = document.createElement('div');
@@ -114,7 +103,7 @@
                 div.onclick = () => playChannel(ch.u, ch.n);
                 div.innerHTML = `
                     <div class="channel-thumb" style="background-color: ${ch.bg}; border: 1px solid rgba(255,255,255,0.05)">
-                        <img src="${ch.img}">
+                        <img src="${P + ch.img}">
                         <span class="remo-label text-white">ohtman</span>
                     </div>
                     <span class="mt-2 text-[10px] font-bold text-center text-gray-400">${ch.n}</span>
@@ -126,24 +115,51 @@
         function playChannel(url, title) {
             document.getElementById('pTitle').innerText = title;
             p.style.display = 'flex';
-            overlay.style.display = 'none';
+            overlay.style.display = 'none'; // إخفاء طبقة الخطأ مبدئياً
+
             if (h) h.destroy();
+
             if (Hls.isSupported()) {
                 h = new Hls();
                 h.loadSource(url);
                 h.attachMedia(v);
-                h.on(Hls.Events.MANIFEST_PARSED, () => v.play().catch(() => overlay.style.display = 'flex'));
+                h.on(Hls.Events.MANIFEST_PARSED, () => {
+                    attemptPlay();
+                });
             } else if (v.canPlayType('application/vnd.apple.mpegurl')) {
-                v.src = url; v.play().catch(() => overlay.style.display = 'flex');
+                v.src = url;
+                attemptPlay();
             }
         }
 
-        function forcePlay() { v.play(); overlay.style.display = 'none'; }
-        function closeP() { p.style.display = 'none'; v.pause(); if (h) h.destroy(); }
-        function startDefault() { playChannel(CHANNELS[0].u, CHANNELS[0].n); }
+        // محاولة التشغيل مع التقاط الخطأ
+        function attemptPlay() {
+            const playPromise = v.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("Auto-play failed, showing manual button.");
+                    overlay.style.display = 'flex'; // إظهار زر "إضغط للمشاهدة"
+                });
+            }
+        }
 
-        // تشغيل القسم المغربي عند البداية
+        function manualPlay() {
+            v.play();
+            overlay.style.display = 'none';
+        }
+
+        function startWithClick() {
+            // تشغيل القناة الأولى عند ضغط المستخدم لزر شاهد (لبدء التفاعل الصريح)
+            playChannel(CHANNELS[0].u, CHANNELS[0].n);
+        }
+
+        function closeP() {
+            p.style.display = 'none';
+            v.pause();
+            if (h) h.destroy();
+        }
+
         switchCategory('المغرب');
     </script>
 </body>
-</html>
+    </html>
